@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Juego de Sumas</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Juego de sumas</h1>
+    <div class="contenedor">
+        <div class="Juego">
+            <script>
+                const config = {
+                    type: Phaser.AUTO,
+                    width: 800,
+                    height: 600,
+                    physics: {
+                        default: 'arcade',
+                        arcade: {
+                            gravity: { y: 0 },
+                            debug: false
+                        }
+                    },
+                    scene: {
+                        preload: preload,
+                        create: create,
+                        update: update
+                    }
+                };
+            
+                let player, cursors, apples, appleCount = 0, readyButton;
+                const sum = { a: Phaser.Math.Between(0, 10), b: Phaser.Math.Between(0, 10) };
+                const totalSum = sum.a + sum.b;
+            
+                const game = new Phaser.Game(config);
+            
+                function preload() {
+                    this.load.image('player', 'assets/player.png');  // Jugador
+                    this.load.image('apple', 'assets/apple.png');    // Manzana
+                    this.load.image('background', 'assets/background.jpg'); //Fondo
+                }
+            
+                function create() {
+                    this.add.tileSprite(400, 300, 800, 600, 'background');
+                    
+                    // Crear el jugador
+                    player = this.physics.add.sprite(400, 300, 'player');
+                    player.setCollideWorldBounds(true);
+            
+                    // Crear las manzanas
+                    apples = this.physics.add.group()
+
+                    // Generar
+                    for (let i = 0; i < 20; i++) {
+                    generateRandomApple(this);
+                    }
+            
+                    // Recolección de manzanas
+                    this.physics.add.overlap(player, apples, collectApple, null, this);
+            
+                    // Controles
+                    cursors = this.input.keyboard.createCursorKeys();
+                    
+                    // Mostrar la suma
+                    this.add.text(16, 16, `Suma: ${sum.a} + ${sum.b} = ?`, {fontSize: '32px', fill: '#000', fontStyle: 'bold'});
+            
+                    // Contador de manzanas recolectadas
+                    this.add.text(16, 500, 'Manzanas recogidas: ', { fontSize: '24px', fill: '#000', fontStyle: 'bold' });
+                    this.appleText = this.add.text(300, 500, appleCount, { fontSize: '24px', fill: '#000', fontStyle: 'bold' });
+
+                    // Botón
+                    readyButton = this.add.text(16, 550, 'Listo', { fontSize: '32px', fill: '#2980b9', fontStyle: 'bold' })
+                    .setInteractive()
+                    .on('pointerdown', checkAnswer);
+                }
+            
+                function update() {
+                    // Movimiento del jugador
+                    player.setVelocity(0);
+                    if (cursors.left.isDown) player.setVelocityX(-160);
+                    if (cursors.right.isDown) player.setVelocityX(160);
+                    if (cursors.up.isDown) player.setVelocityY(-160);
+                    if (cursors.down.isDown) player.setVelocityY(160);
+            
+                    // Actualizar
+                    this.appleText.setText(appleCount);
+                }
+            
+                function generateRandomApple(scene) {
+                    // Generar coordenadas
+                    const randomX = Phaser.Math.Between(50, 750);  //Bordes
+                    const randomY = Phaser.Math.Between(50, 550);
+            
+                    // Agregar la manzana al grupo en la posición aleatoria
+                    let apple = apples.create(randomX, randomY, 'apple');
+                
+                    // Ajustar el tamaño
+                    apple.setScale(0.7);
+                }
+            
+                function collectApple(player, apple) {
+                    apple.disableBody(true, true);  // Recoger
+                    appleCount++;
+                }
+            
+                function checkAnswer() {
+                    const correct = appleCount === totalSum;
+                    if (correct) {
+                        alert('¡Correcto!');
+                    } else {
+                        alert(`Incorrecto. Recogiste ${appleCount}, pero la respuesta es ${totalSum}.`);
+                    }
+                    // Reiniciar
+                    location.reload();
+                }
+            </script>
+        </div>
+    </div>
+</body>
+</html>
